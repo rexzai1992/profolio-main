@@ -1,5 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
 
+import { useTheme } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 
 type PageSectionProps = {
@@ -19,6 +22,8 @@ export function PageSection({
   tone = "default",
   spacing = "default",
 }: PageSectionProps) {
+  const { theme } = useTheme();
+
   return (
     <section
       id={id}
@@ -26,7 +31,10 @@ export function PageSection({
       className={cn(
         "relative",
         spacing === "default" ? "py-20 md:py-24" : "py-9",
-        tone === "muted" && "border-y border-white/10 bg-white/[0.02]",
+        tone === "muted" &&
+          (theme === "dark"
+            ? "border-y border-white/10 bg-white/[0.02]"
+            : "border-y border-slate-300/70 bg-slate-100/65"),
         className,
       )}
     >

@@ -1,17 +1,25 @@
 "use client";
 
 import { usePortfolioContent } from "@/components/providers/portfolio-content-provider";
+import { useTheme } from "@/components/providers/theme-provider";
 import { Container } from "@/components/ui/container";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { PageSection } from "@/components/ui/page-section";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { cn } from "@/lib/utils";
 
 export function Contact() {
   const { content } = usePortfolioContent();
+  const { theme } = useTheme();
   const contact = content.contact;
-  const labelClass = "text-sm font-medium text-steel/90";
-  const fieldClass =
-    "mt-2 w-full rounded-xl border border-white/15 bg-ink/70 px-4 py-2.5 text-sm text-white placeholder:text-steel/60";
+  const isDark = theme === "dark";
+  const labelClass = cn("text-sm font-medium", isDark ? "text-steel/90" : "text-slate-700");
+  const fieldClass = cn(
+    "mt-2 w-full rounded-xl border px-4 py-2.5 text-sm",
+    isDark
+      ? "border-white/15 bg-ink/70 text-white placeholder:text-steel/60"
+      : "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400",
+  );
 
   return (
     <PageSection id="contact" tone="muted">
@@ -33,19 +41,28 @@ export function Contact() {
                   </p>
                   <a
                     href={channel.href}
-                    className="mt-2 inline-flex text-base font-semibold text-white underline-offset-4 transition duration-300 hover:text-cobalt hover:underline"
+                    className={cn(
+                      "mt-2 inline-flex text-base font-semibold underline-offset-4 transition duration-300 hover:text-cobalt hover:underline",
+                      isDark ? "text-white" : "text-slate-900",
+                    )}
                   >
                     {channel.value}
                   </a>
-                  <p className="mt-2 text-sm text-steel/85">{channel.note}</p>
+                  <p className={cn("mt-2 text-sm", isDark ? "text-steel/85" : "text-slate-600")}>
+                    {channel.note}
+                  </p>
                 </FeatureCard>
               </li>
             ))}
           </ul>
 
           <FeatureCard animate delayMs={140}>
-            <h3 className="text-xl font-semibold text-white">{contact.formTitle}</h3>
-            <p className="mt-2 text-sm text-steel/85">{contact.formIntro}</p>
+            <h3 className={cn("text-xl font-semibold", isDark ? "text-white" : "text-slate-900")}>
+              {contact.formTitle}
+            </h3>
+            <p className={cn("mt-2 text-sm", isDark ? "text-steel/85" : "text-slate-600")}>
+              {contact.formIntro}
+            </p>
 
             <form
               action={"mailto:" + content.site.contactEmail}
@@ -123,7 +140,12 @@ export function Contact() {
 
               <button
                 type="submit"
-                className="rounded-full bg-[#f1f4ff] px-6 py-3 text-sm font-semibold text-[#0b1022] shadow-[0_8px_22px_-14px_rgba(128,167,255,0.55)] transition duration-300 hover:-translate-y-0.5 hover:bg-white"
+                className={cn(
+                  "rounded-full px-6 py-3 text-sm font-semibold shadow-[0_8px_22px_-14px_rgba(128,167,255,0.55)] transition duration-300 hover:-translate-y-0.5",
+                  isDark
+                    ? "bg-[#f1f4ff] text-[#0b1022] hover:bg-white"
+                    : "bg-slate-900 text-white hover:bg-slate-800",
+                )}
               >
                 Send Project Brief
               </button>

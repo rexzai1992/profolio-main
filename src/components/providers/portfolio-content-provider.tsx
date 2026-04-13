@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -12,6 +13,7 @@ import {
 import {
   defaultPortfolioContent,
   isPortfolioContentLike,
+  normalizePortfolioContent,
   PORTFOLIO_CONTENT_STORAGE_KEY,
   type PortfolioContent,
 } from "@/lib/site";
@@ -44,22 +46,34 @@ function loadStoredContent(): PortfolioContent {
       return defaultPortfolioContent;
     }
 
-    return parsed;
+    return normalizePortfolioContent(parsed);
   } catch {
     return defaultPortfolioContent;
   }
 }
 
 export function PortfolioContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContentState] = useState<PortfolioContent>(() => loadStoredContent());
+  const [content, setContentState] = useState<PortfolioContent>(defaultPortfolioContent);
+
+  useEffect(() => {
+    const loaded = loadStoredContent();
+    const rafId = window.requestAnimationFrame(() => {
+      setContentState(loaded);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   const setContent = useCallback((nextContent: PortfolioContent) => {
-    setContentState(nextContent);
+    const normalized = normalizePortfolioContent(nextContent);
+    setContentState(normalized);
 
     if (typeof window !== "undefined") {
       window.localStorage.setItem(
         PORTFOLIO_CONTENT_STORAGE_KEY,
-        JSON.stringify(nextContent),
+        JSON.stringify(normalized),
       );
     }
   }, []);

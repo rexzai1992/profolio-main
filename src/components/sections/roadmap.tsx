@@ -3,14 +3,18 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { usePortfolioContent } from "@/components/providers/portfolio-content-provider";
+import { useTheme } from "@/components/providers/theme-provider";
 import { Container } from "@/components/ui/container";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { PageSection } from "@/components/ui/page-section";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { cn } from "@/lib/utils";
 
 export function Roadmap() {
   const { content } = usePortfolioContent();
+  const { theme } = useTheme();
   const roadmap = content.roadmap;
+  const isDark = theme === "dark";
 
   return (
     <PageSection id="roadmap" tone="muted">
@@ -29,10 +33,19 @@ export function Roadmap() {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt/95">
                   {item.phase}
                 </p>
-                <h3 className="mt-3 text-xl font-semibold text-white">{item.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-steel/90">{item.description}</p>
+                <h3 className={cn("mt-3 text-xl font-semibold", isDark ? "text-white" : "text-slate-900")}>
+                  {item.title}
+                </h3>
+                <p className={cn("mt-3 text-sm leading-relaxed", isDark ? "text-steel/90" : "text-slate-600")}>
+                  {item.description}
+                </p>
 
-                <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-ink/70">
+                <div
+                  className={cn(
+                    "mt-5 overflow-hidden rounded-xl border",
+                    isDark ? "border-white/10 bg-ink/70" : "border-slate-300 bg-slate-100/70",
+                  )}
+                >
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -41,7 +54,12 @@ export function Roadmap() {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="flex h-44 items-center justify-center text-center text-xs font-semibold uppercase tracking-wide text-steel/70">
+                    <div
+                      className={cn(
+                        "flex h-44 items-center justify-center text-center text-xs font-semibold uppercase tracking-wide",
+                        isDark ? "text-steel/70" : "text-slate-500",
+                      )}
+                    >
                       Add image URL in Admin to show app photo
                     </div>
                   )}

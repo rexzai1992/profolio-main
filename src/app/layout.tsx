@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { Navbar } from "@/components/layout/navbar";
 import { PortfolioContentProvider } from "@/components/providers/portfolio-content-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { defaultPortfolioContent } from "@/lib/site";
 
 import "./globals.css";
@@ -26,16 +27,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-ink text-white antialiased">
+      <body className="antialiased">
         <a href="#content" className="skip-link">
           Skip to content
         </a>
 
         <PortfolioContentProvider>
-          <div className="min-h-screen overflow-x-clip bg-ink">
-            <Navbar />
-            {children}
-          </div>
+          <ThemeProvider>
+            <div className="min-h-screen overflow-x-clip transition-colors duration-300">
+              <Navbar />
+              {children}
+            </div>
+          </ThemeProvider>
         </PortfolioContentProvider>
       </body>
     </html>

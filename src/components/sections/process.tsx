@@ -1,14 +1,18 @@
 "use client";
 
 import { usePortfolioContent } from "@/components/providers/portfolio-content-provider";
+import { useTheme } from "@/components/providers/theme-provider";
 import { Container } from "@/components/ui/container";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { PageSection } from "@/components/ui/page-section";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { cn } from "@/lib/utils";
 
 export function Process() {
   const { content } = usePortfolioContent();
+  const { theme } = useTheme();
   const process = content.process;
+  const isDark = theme === "dark";
 
   return (
     <PageSection id="process">
@@ -27,8 +31,10 @@ export function Process() {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt/95">
                   Step {item.step}
                 </p>
-                <h3 className="mt-3 text-xl font-semibold text-white">{item.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-steel/90">
+                <h3 className={cn("mt-3 text-xl font-semibold", isDark ? "text-white" : "text-slate-900")}>
+                  {item.title}
+                </h3>
+                <p className={cn("mt-3 text-sm leading-relaxed", isDark ? "text-steel/90" : "text-slate-600")}>
                   {item.description}
                 </p>
               </FeatureCard>

@@ -6,10 +6,20 @@
   color-scheme: dark;
 }
 
+html.theme-light {
+  color-scheme: light;
+}
+
 body {
   font-family: "Avenir Next", "Avenir", "Segoe UI Variable Text", "Segoe UI", sans-serif;
   background-color: #06070b;
   color: #f3f5fb;
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+html.theme-light body {
+  background-color: #f2f5fb;
+  color: #0f172a;
 }
 
 h1,
@@ -85,12 +95,72 @@ textarea:focus-visible {
   animation-delay: 0.24s;
 }
 
+@keyframes brand-marquee-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes brand-marquee-shift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0);
+  }
+}
+
+.hero-grain-overlay {
+  background-image:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0.5px, transparent 0.5px),
+    linear-gradient(245deg, rgba(255, 255, 255, 0.06) 0.5px, transparent 0.5px);
+  background-size: 3px 3px;
+  mix-blend-mode: soft-light;
+}
+
+.brand-marquee-rail {
+  --marquee-duration: 34s;
+  --marquee-gap: 0px;
+  --marquee-shift: 50%;
+  display: flex;
+  width: max-content;
+  gap: var(--marquee-gap);
+  animation: brand-marquee-shift var(--marquee-duration) linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.brand-marquee-list {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--marquee-gap);
+}
+
+@media (max-width: 900px) {
+  .hero-grain-overlay {
+    opacity: 0 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .brand-marquee-rail {
+    --marquee-duration: 62s;
+    will-change: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .motion-fade-up,
   .motion-delay-1,
   .motion-delay-2,
-  .motion-delay-3 {
+  .motion-delay-3,
+  .brand-marquee-rail {
     animation: none;
+    transform: none;
   }
 
   .trust-ribbon-lane,

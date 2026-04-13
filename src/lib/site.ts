@@ -19,10 +19,7 @@ export type HeroContent = {
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
   platformBadges: string[];
-  storyEyebrow: string;
-  storyTitle: string;
-  storyDescription: string;
-  storyPoints: string[];
+  backgroundMedia?: HeroBackgroundMedia | null;
 };
 
 export type TrustStripContent = {
@@ -48,6 +45,18 @@ export type ProjectItem = {
   summary: string;
   impact: string;
   badges: string[];
+  images?: string[];
+  media?: ProjectMediaItem[];
+};
+
+export type ProjectMediaItem = {
+  type: "image" | "video";
+  url: string;
+};
+
+export type HeroBackgroundMedia = {
+  type: "image" | "video";
+  url: string;
 };
 
 export type RoadmapItem = {
@@ -168,12 +177,7 @@ export const defaultPortfolioContent: PortfolioContent = {
     { label: "Services", href: "#services" },
     { label: "Problems", href: "#problems" },
     { label: "Projects", href: "#projects" },
-    { label: "Visualizer", href: "#app-visualizer" },
-    { label: "Roadmap", href: "#roadmap" },
-    { label: "Experience", href: "#experience" },
-    { label: "Why", href: "#why-me" },
     { label: "Pricing", href: "#pricing" },
-    { label: "Process", href: "#process" },
     { label: "Contact", href: "#contact" },
   ],
   hero: {
@@ -185,6 +189,7 @@ export const defaultPortfolioContent: PortfolioContent = {
     primaryCtaHref: "#contact",
     secondaryCtaLabel: "View Featured Projects",
     secondaryCtaHref: "#projects",
+    backgroundMedia: null,
     platformBadges: [
       "PWA",
       "Android App",
@@ -194,15 +199,6 @@ export const defaultPortfolioContent: PortfolioContent = {
       "Automation",
       "POS",
       "WhatsApp Tool",
-    ],
-    storyEyebrow: "Product Storytelling Approach",
-    storyTitle: "Build once, scale confidently.",
-    storyDescription:
-      "Every engagement is shaped around one goal: replacing friction with a software flow that your team can trust daily.",
-    storyPoints: [
-      "AI Photobooth and event products with high-traffic reliability.",
-      "Automation tools that reduce repetitive operational work.",
-      "Cross-platform app delivery for web, mobile, and internal teams.",
     ],
   },
   trustStrip: {
@@ -293,6 +289,8 @@ export const defaultPortfolioContent: PortfolioContent = {
         impact:
           "Improved event throughput by automating generation and result delivery in real time.",
         badges: ["Web App", "Automation", "Dashboard"],
+        images: ["", "", ""],
+        media: [],
       },
       {
         name: "Photobooth App",
@@ -302,6 +300,8 @@ export const defaultPortfolioContent: PortfolioContent = {
         impact:
           "Enabled operators to run high-volume booths with fewer manual touchpoints and cleaner execution.",
         badges: ["PWA", "Web App", "Dashboard"],
+        images: ["", "", ""],
+        media: [],
       },
       {
         name: "Event Management System",
@@ -311,6 +311,8 @@ export const defaultPortfolioContent: PortfolioContent = {
         impact:
           "Reduced planning overhead while improving visibility across tasks, owners, and event timelines.",
         badges: ["Web App", "Dashboard", "Automation"],
+        images: ["", "", ""],
+        media: [],
       },
       {
         name: "WhatsApp Automation Tool",
@@ -320,6 +322,8 @@ export const defaultPortfolioContent: PortfolioContent = {
         impact:
           "Cut response time and manual messaging effort while preserving consistent customer communication.",
         badges: ["WhatsApp Tool", "Automation", "Dashboard"],
+        images: ["", "", ""],
+        media: [],
       },
       {
         name: "Android POS System",
@@ -329,6 +333,8 @@ export const defaultPortfolioContent: PortfolioContent = {
         impact:
           "Improved checkout efficiency and reporting accuracy for retail teams managing live operations.",
         badges: ["Android App", "POS", "Dashboard"],
+        images: ["", "", ""],
+        media: [],
       },
     ],
   },
@@ -536,6 +542,76 @@ export const defaultPortfolioContent: PortfolioContent = {
     tagline: "Affordable custom apps for real business problems.",
   },
 };
+
+function normalizeProjectMediaItem(value: unknown): ProjectMediaItem | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const item = value as Record<string, unknown>;
+  const type = item.type;
+  const url = typeof item.url === "string" ? item.url.trim() : "";
+
+  if ((type !== "image" && type !== "video") || !url) {
+    return null;
+  }
+
+  return { type, url };
+}
+
+function normalizeHeroBackgroundMedia(value: unknown): HeroBackgroundMedia | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const item = value as Record<string, unknown>;
+  const type = item.type;
+  const url = typeof item.url === "string" ? item.url.trim() : "";
+
+  if ((type !== "image" && type !== "video") || !url) {
+    return null;
+  }
+
+  return { type, url };
+}
+
+export function normalizePortfolioContent(content: PortfolioContent): PortfolioContent {
+  const normalizedProjects = content.featuredProjects.items.map((project) => {
+    const normalizedMedia =
+      Array.isArray(project.media) && project.media.length > 0
+        ? project.media
+            .map((item) => normalizeProjectMediaItem(item))
+            .filter((item): item is ProjectMediaItem => Boolean(item))
+        : Array.isArray(project.images)
+          ? project.images
+              .map((image) =>
+                typeof image === "string" && image.trim()
+                  ? { type: "image" as const, url: image.trim() }
+                  : null,
+              )
+              .filter((item): item is NonNullable<typeof item> => Boolean(item))
+          : [];
+
+    return {
+      ...project,
+      media: normalizedMedia.slice(0, 8),
+      images: Array.isArray(project.images) ? project.images.slice(0, 3) : [],
+    };
+  });
+
+  return {
+    ...content,
+    navLinks: content.navLinks.filter((link) => link.href !== "#app-visualizer"),
+    hero: {
+      ...content.hero,
+      backgroundMedia: normalizeHeroBackgroundMedia(content.hero.backgroundMedia),
+    },
+    featuredProjects: {
+      ...content.featuredProjects,
+      items: normalizedProjects,
+    },
+  };
+}
 
 export function isPortfolioContentLike(value: unknown): value is PortfolioContent {
   if (!value || typeof value !== "object") {

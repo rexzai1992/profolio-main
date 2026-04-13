@@ -1,5 +1,8 @@
+"use client";
+
 import type { CSSProperties } from "react";
 
+import { useTheme } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 
 type SectionHeadingProps = {
@@ -19,6 +22,7 @@ export function SectionHeading({
   animate = false,
   delayMs,
 }: SectionHeadingProps) {
+  const { theme } = useTheme();
   const style: CSSProperties | undefined =
     delayMs === undefined ? undefined : { animationDelay: `${delayMs}ms` };
 
@@ -27,10 +31,22 @@ export function SectionHeading({
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cobalt">
         {eyebrow}
       </p>
-      <h2 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">
+      <h2
+        className={cn(
+          "mt-3 text-3xl font-semibold leading-tight sm:text-4xl",
+          theme === "dark" ? "text-white" : "text-slate-900",
+        )}
+      >
         {title}
       </h2>
-      <p className="mt-4 text-base leading-relaxed text-steel/90">{description}</p>
+      <p
+        className={cn(
+          "mt-4 text-base leading-relaxed",
+          theme === "dark" ? "text-steel/90" : "text-slate-600",
+        )}
+      >
+        {description}
+      </p>
     </header>
   );
 }
