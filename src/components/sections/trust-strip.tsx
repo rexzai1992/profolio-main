@@ -7,29 +7,45 @@ import { PageSection } from "@/components/ui/page-section";
 export function TrustStrip() {
   const { content } = usePortfolioContent();
   const trustStrip = content.trustStrip;
+  const brandItems = content.featuredProjects.items.map((project) => project.name);
+  const marqueeItems = brandItems.length > 0 ? brandItems : trustStrip.marks;
 
   return (
     <PageSection
       ariaLabel="Trust strip"
       tone="muted"
       spacing="compact"
-      className="bg-white/[0.025]"
+      className="bg-white/[0.025] py-8 md:py-10"
     >
       <Container>
-        <p className="motion-fade-up text-center text-sm font-medium text-steel/90 sm:text-base">
+        <div className="trust-ribbon-shell" aria-hidden>
+          <span className="trust-ribbon-lane trust-ribbon-lane-a" />
+          <span className="trust-ribbon-lane trust-ribbon-lane-b" />
+        </div>
+
+        <p className="mt-6 text-center text-sm font-medium text-steel/90 sm:text-base">
           {trustStrip.message}
         </p>
 
-        <ul className="mt-6 grid gap-3 text-center sm:grid-cols-2 lg:grid-cols-4">
-          {trustStrip.marks.map((item) => (
-            <li
-              key={item}
-              className="motion-fade-up rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-steel/90 transition duration-300 hover:-translate-y-0.5 hover:border-cobalt/40 hover:bg-white/[0.07]"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
+        <div className="trust-marquee mt-6" aria-label="Featured brands and products">
+          <div className="trust-marquee-track">
+            <ul className="trust-marquee-group">
+              {marqueeItems.map((item) => (
+                <li key={item} className="trust-marquee-pill">
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <ul className="trust-marquee-group" aria-hidden>
+              {marqueeItems.map((item, index) => (
+                <li key={`${item}-${index}`} className="trust-marquee-pill">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </Container>
     </PageSection>
   );
