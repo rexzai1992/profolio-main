@@ -105,6 +105,22 @@ const LazyFeaturedProjects = dynamic(
   { ssr: false },
 );
 
+const LazyServices = dynamic(
+  () =>
+    import("@/components/sections/services").then(
+      (module) => module.Services,
+    ),
+  { ssr: false },
+);
+
+const LazyProblems = dynamic(
+  () =>
+    import("@/components/sections/problems").then(
+      (module) => module.Problems,
+    ),
+  { ssr: false },
+);
+
 const LazyPricing = dynamic(
   () =>
     import("@/components/sections/pricing").then(
@@ -128,6 +144,30 @@ export function DeferredFeaturedProjects() {
       label="Featured Projects"
       minHeightClass="min-h-[520px]"
       Component={LazyFeaturedProjects}
+    />
+  );
+}
+
+export function DeferredServices() {
+  return (
+    <DeferredSectionShell
+      id="services"
+      label="Services"
+      minHeightClass="min-h-[480px]"
+      rootMargin="260px 0px"
+      Component={LazyServices}
+    />
+  );
+}
+
+export function DeferredProblems() {
+  return (
+    <DeferredSectionShell
+      id="problems"
+      label="Problems"
+      minHeightClass="min-h-[460px]"
+      rootMargin="240px 0px"
+      Component={LazyProblems}
     />
   );
 }

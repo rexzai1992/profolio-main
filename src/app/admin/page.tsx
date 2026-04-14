@@ -59,6 +59,7 @@ export default function AdminPage() {
   const { theme } = useTheme();
   const [draft, setDraft] = useState("");
   const [previewKey, setPreviewKey] = useState(0);
+  const [isPreviewPaused, setIsPreviewPaused] = useState(false);
   const [heroMediaTypeDraft, setHeroMediaTypeDraft] = useState<MediaType>("video");
   const [notice, setNotice] = useState<Notice>({
     type: "info",
@@ -773,30 +774,66 @@ export default function AdminPage() {
                 <p className={cn("text-sm font-semibold", isDark ? "text-white" : "text-slate-900")}>
                   Live Site Preview
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setPreviewKey((currentKey) => currentKey + 1)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-semibold transition",
-                    isDark
-                      ? "border-white/20 bg-white/[0.05] text-white hover:border-cobalt/60"
-                      : "border-slate-300 bg-white text-slate-800 hover:border-blue-300",
-                  )}
-                >
-                  Reload Preview
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewKey((currentKey) => currentKey + 1)}
+                    disabled={isPreviewPaused}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
+                      isDark
+                        ? "border-white/20 bg-white/[0.05] text-white hover:border-cobalt/60"
+                        : "border-slate-300 bg-white text-slate-800 hover:border-blue-300",
+                    )}
+                  >
+                    Reload Preview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsPreviewPaused((isPaused) => {
+                        if (isPaused) {
+                          setPreviewKey((currentKey) => currentKey + 1);
+                        }
+
+                        return !isPaused;
+                      })
+                    }
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                      isDark
+                        ? "border-white/20 bg-white/[0.05] text-white hover:border-cobalt/60"
+                        : "border-slate-300 bg-white text-slate-800 hover:border-blue-300",
+                    )}
+                  >
+                    {isPreviewPaused ? "Resume Preview" : "Pause Preview"}
+                  </button>
+                </div>
               </div>
               <p className={cn("mt-2 text-xs", isDark ? "text-steel/80" : "text-slate-600")}>
-                Preview reflects current stored content. Media uploads refresh this panel automatically.
+                {isPreviewPaused
+                  ? "Preview is paused to reduce CPU usage."
+                  : "Preview reflects current stored content. Media uploads refresh this panel automatically."}
               </p>
 
               <div className={cn("mt-3 overflow-hidden rounded-xl border", isDark ? "border-white/10" : "border-slate-300")}>
-                <iframe
-                  key={previewKey}
-                  src="/"
-                  title="Homepage live preview"
-                  className="h-[82vh] min-h-[700px] w-full bg-white"
-                />
+                {isPreviewPaused ? (
+                  <div
+                    className={cn(
+                      "flex h-[82vh] min-h-[700px] items-center justify-center px-6 text-center text-sm",
+                      isDark ? "bg-[#0b111b] text-steel/85" : "bg-slate-50 text-slate-600",
+                    )}
+                  >
+                    Live preview is paused. Click Resume Preview to load the homepage again.
+                  </div>
+                ) : (
+                  <iframe
+                    key={previewKey}
+                    src="/"
+                    title="Homepage live preview"
+                    className="h-[82vh] min-h-[700px] w-full bg-white"
+                  />
+                )}
               </div>
             </div>
           </aside>

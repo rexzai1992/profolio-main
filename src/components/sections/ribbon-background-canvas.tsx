@@ -325,7 +325,7 @@ function buildRuntimeBands(
     const scaledBand: RibbonBand = {
       ...band,
       width: band.width * quality.widthScale,
-      fiberCount: Math.max(34, Math.round(band.fiberCount * quality.fiberScale)),
+      fiberCount: Math.max(24, Math.round(band.fiberCount * quality.fiberScale)),
     };
 
     const rgbA = hexToRgb(scaledBand.colorA);
@@ -358,43 +358,43 @@ function createSpineBuffer(count: number): SpinePoint[] {
 function resolveQuality(width: number): RenderQuality {
   if (width < 760) {
     return {
-      segments: 56,
+      segments: 46,
       pointStride: 3,
-      widthScale: 0.7,
-      fiberScale: 0.46,
-      dprCap: 1.2,
+      widthScale: 0.64,
+      fiberScale: 0.36,
+      dprCap: 1,
     };
   }
 
   if (width < 1100) {
     return {
-      segments: 74,
-      pointStride: 2,
-      widthScale: 0.84,
-      fiberScale: 0.64,
-      dprCap: 1.45,
+      segments: 62,
+      pointStride: 3,
+      widthScale: 0.78,
+      fiberScale: 0.5,
+      dprCap: 1.2,
     };
   }
 
   return {
-    segments: 92,
-    pointStride: 1,
-    widthScale: 0.96,
-    fiberScale: 0.82,
-    dprCap: 1.65,
+    segments: 76,
+    pointStride: 2,
+    widthScale: 0.88,
+    fiberScale: 0.64,
+    dprCap: 1.35,
   };
 }
 
 function resolveFrameInterval(width: number) {
   if (width < 760) {
-    return 42;
+    return 52;
   }
 
   if (width < 1100) {
-    return 28;
+    return 38;
   }
 
-  return 18;
+  return 26;
 }
 
 function buildSpine(
@@ -628,6 +628,7 @@ export function RibbonBackgroundCanvas({
     let frameAccumulator = 0;
     let minFrameInterval = resolveFrameInterval(cssWidth);
     let isVisible = true;
+    let isRunning = false;
 
     let quality = resolveQuality(cssWidth);
     let table = getSegmentTable(quality.segments);
@@ -706,10 +707,21 @@ export function RibbonBackgroundCanvas({
       });
     };
 
+    const shouldRender = () => animate && !document.hidden && isVisible;
+
+    const stopRenderLoop = () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      isRunning = false;
+      lastTimestamp = 0;
+      frameAccumulator = 0;
+    };
+
     const render = (timestamp: number) => {
-      if (document.hidden || !isVisible) {
-        lastTimestamp = timestamp;
-        rafId = window.requestAnimationFrame(render);
+      if (!shouldRender()) {
+        stopRenderLoop();
         return;
       }
 
@@ -733,10 +745,19 @@ export function RibbonBackgroundCanvas({
       rafId = window.requestAnimationFrame(render);
     };
 
+    const startRenderLoop = () => {
+      if (!shouldRender() || isRunning) {
+        return;
+      }
+
+      isRunning = true;
+      rafId = window.requestAnimationFrame(render);
+    };
+
     resizeCanvas();
 
     if (animate) {
-      rafId = window.requestAnimationFrame(render);
+      startRenderLoop();
     } else {
       drawFrame(0);
     }
@@ -750,22 +771,34 @@ export function RibbonBackgroundCanvas({
             (entries) => {
               const entry = entries[0];
               isVisible = entry ? entry.isIntersecting : true;
+              if (shouldRender()) {
+                startRenderLoop();
+              } else {
+                stopRenderLoop();
+              }
             },
             { threshold: 0.01 },
           )
         : null;
     intersectionObserver?.observe(canvas);
+    const handleVisibilityChange = () => {
+      if (shouldRender()) {
+        startRenderLoop();
+      } else {
+        stopRenderLoop();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", scheduleResize);
       intersectionObserver?.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (resizeRafId) {
         window.cancelAnimationFrame(resizeRafId);
       }
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
+      stopRenderLoop();
     };
   }, [animate, theme]);
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { usePerformanceMode } from "@/components/providers/performance-mode-provider";
 import { usePortfolioContent } from "@/components/providers/portfolio-content-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Container } from "@/components/ui/container";
@@ -11,6 +12,7 @@ const HIDDEN_SECTION_HREFS = new Set(["#roadmap", "#why-me", "#process", "#exper
 
 export function Navbar() {
   const { content } = usePortfolioContent();
+  const { mode, toggleMode } = usePerformanceMode();
   const { theme, toggleTheme } = useTheme();
   const visibleNavLinks = content.navLinks.filter((link) => !HIDDEN_SECTION_HREFS.has(link.href));
 
@@ -54,6 +56,21 @@ export function Navbar() {
             ))}
           </ul>
         </nav>
+
+        <button
+          type="button"
+          onClick={toggleMode}
+          className={cn(
+            "rounded-full border px-3 py-2 text-xs font-semibold transition duration-300 sm:px-4 sm:text-sm",
+            theme === "dark"
+              ? "border-white/20 bg-white/[0.06] text-white hover:border-cobalt/60 hover:bg-white/[0.1]"
+              : "border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:text-slate-900",
+          )}
+          aria-label="Toggle performance mode"
+        >
+          <span className="sm:hidden">Perf</span>
+          <span className="hidden sm:inline">{mode === "eco" ? "Eco Mode" : "Balanced FX"}</span>
+        </button>
 
         <button
           type="button"

@@ -224,14 +224,20 @@ function BrandLogo({ brand, isDark }: { brand: BrandItem; isDark: boolean }) {
 type BrandMarqueeProps = {
   className?: string;
   animate?: boolean;
+  durationSeconds?: number;
 };
 
-export function BrandMarquee({ className, animate = true }: BrandMarqueeProps) {
+export function BrandMarquee({
+  className,
+  animate = true,
+  durationSeconds = 46,
+}: BrandMarqueeProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const marqueeItems = brandItems;
   const listRef = useRef<HTMLUListElement | null>(null);
   const [marqueeShift, setMarqueeShift] = useState(0);
+  const clampedDuration = Math.max(18, durationSeconds);
 
   useEffect(() => {
     if (!animate) {
@@ -272,11 +278,11 @@ export function BrandMarquee({ className, animate = true }: BrandMarqueeProps) {
   const railStyle = useMemo(
     () =>
       ({
-        "--marquee-duration": animate ? "46s" : "0s",
+        "--marquee-duration": animate ? `${clampedDuration}s` : "0s",
         "--marquee-gap": "0px",
         "--marquee-shift": animate ? (marqueeShift > 0 ? `${marqueeShift}px` : "50%") : "0px",
       }) as CSSProperties,
-    [animate, marqueeShift],
+    [animate, clampedDuration, marqueeShift],
   );
 
   return (

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { GlobalSystemDebug } from "@/components/debug/global-system-debug";
 import { Navbar } from "@/components/layout/navbar";
+import { PerformanceModeProvider } from "@/components/providers/performance-mode-provider";
 import { PortfolioContentProvider } from "@/components/providers/portfolio-content-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { defaultPortfolioContent } from "@/lib/site";
@@ -34,10 +36,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
         <PortfolioContentProvider>
           <ThemeProvider>
-            <div className="min-h-screen overflow-x-clip transition-colors duration-300">
-              <Navbar />
-              {children}
-            </div>
+            <PerformanceModeProvider>
+              <div className="min-h-screen overflow-x-clip transition-colors duration-300">
+                <Navbar />
+                {children}
+                <GlobalSystemDebug />
+              </div>
+            </PerformanceModeProvider>
           </ThemeProvider>
         </PortfolioContentProvider>
       </body>

@@ -13,7 +13,8 @@
   "dependencies": {
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "systeminformation": "^5.31.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

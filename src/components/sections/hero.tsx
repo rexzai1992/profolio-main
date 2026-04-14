@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { usePerformanceMode } from "@/components/providers/performance-mode-provider";
 import { usePortfolioContent } from "@/components/providers/portfolio-content-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { BrandMarquee } from "@/components/sections/brand-marquee";
@@ -27,11 +28,17 @@ function revealStyle(shouldAnimate: boolean, delayInSeconds: number) {
   return { animationDelay: `${Math.round(delayInSeconds * 1000)}ms` };
 }
 
-export function Hero() {
+type HeroProps = {
+  prioritizeMediaLoad?: boolean;
+};
+
+export function Hero({ prioritizeMediaLoad = false }: HeroProps) {
   const { content } = usePortfolioContent();
+  const { isEcoMode } = usePerformanceMode();
   const { theme } = useTheme();
   const hero = content.hero;
   const [reduceMotion, setReduceMotion] = useState(true);
+  const [showHeroContent, setShowHeroContent] = useState(() => !prioritizeMediaLoad);
   const { width: viewportWidth, liteMode } = useLiteMode(1600);
 
   useEffect(() => {
@@ -55,14 +62,44 @@ export function Hero() {
     };
   }, []);
 
-  const shouldAnimate = !reduceMotion && !liteMode;
+  useEffect(() => {
+    if (!prioritizeMediaLoad || showHeroContent) {
+      return;
+    }
+
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    const revealContent = () => {
+      setShowHeroContent(true);
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(revealContent, { timeout: 1100 });
+    } else {
+      timeoutId = window.setTimeout(revealContent, 520);
+    }
+
+    return () => {
+      if (idleId !== null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [prioritizeMediaLoad, showHeroContent]);
+
+  const shouldShowHeroContent = !prioritizeMediaLoad || showHeroContent;
+
+  const shouldAnimate = !reduceMotion && !liteMode && !isEcoMode;
   const isDark = theme === "dark";
   const backgroundMedia = hero.backgroundMedia?.url?.trim() ? hero.backgroundMedia : null;
   const showRibbon = viewportWidth >= 760;
-  const animateRibbon = !reduceMotion && viewportWidth >= 900;
+  const animateRibbon = !reduceMotion && viewportWidth >= 900 && !isEcoMode;
   const allowBackgroundVideo =
     backgroundMedia?.type === "video" && shouldAnimate && viewportWidth >= 1500;
   const animateMarquee = !reduceMotion;
+  const marqueeDurationSeconds = isEcoMode ? 88 : 46;
 
   return (
     <section
@@ -134,83 +171,90 @@ export function Hero() {
           )}
         />
 
-        {!liteMode ? (
+        {!liteMode && !isEcoMode ? (
           <div className={cn("hero-grain-overlay absolute inset-0 z-[5]", isDark ? "opacity-30" : "opacity-15")} />
         ) : null}
       </div>
 
       <Container className="relative z-10">
-        <div className="max-w-3xl pt-10 md:pt-16">
-          <p
-            style={revealStyle(shouldAnimate, 0.05)}
-            className={cn(
-              shouldAnimate && "motion-fade-up",
-              "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]",
-              isDark
-                ? "border-cobalt/45 bg-cobalt/10 text-cobalt"
-                : "border-violet-300/80 bg-violet-100/80 text-violet-700",
-            )}
-          >
-            {hero.eyebrow}
-          </p>
-
-          <h1
-            style={revealStyle(shouldAnimate, 0.12)}
-            className={cn(
-              shouldAnimate && "motion-fade-up",
-              "mt-6 max-w-2xl text-[clamp(2.8rem,5.8vw,5.15rem)] font-semibold leading-[0.98] tracking-[-0.055em]",
-              isDark ? "text-white" : "text-[#0a2540]",
-            )}
-          >
-            {hero.title}
-          </h1>
-
-          <p
-            style={revealStyle(shouldAnimate, 0.2)}
-            className={cn(
-              shouldAnimate && "motion-fade-up",
-              "mt-6 max-w-xl text-base leading-relaxed sm:text-lg",
-              isDark ? "text-steel/90" : "text-[#425466]",
-            )}
-          >
-            {hero.description}
-          </p>
-
-          <div
-            style={revealStyle(shouldAnimate, 0.3)}
-            className={cn(shouldAnimate && "motion-fade-up", "mt-8 flex flex-wrap items-center gap-3")}
-          >
-            <Link
-              href={hero.primaryCtaHref}
+        {shouldShowHeroContent ? (
+          <div className="max-w-3xl pt-10 md:pt-16">
+            <p
+              style={revealStyle(shouldAnimate, 0.05)}
               className={cn(
-                "rounded-full px-6 py-3 text-sm font-semibold transition duration-300 hover:-translate-y-0.5",
+                shouldAnimate && "motion-fade-up",
+                "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]",
                 isDark
-                  ? "bg-[#635bff] text-white shadow-[0_12px_24px_rgba(99,91,255,0.28)] hover:bg-[#756dff]"
-                  : "bg-[#635bff] text-white shadow-[0_12px_24px_rgba(99,91,255,0.22)] hover:bg-[#7269ff]",
+                  ? "border-cobalt/45 bg-cobalt/10 text-cobalt"
+                  : "border-violet-300/80 bg-violet-100/80 text-violet-700",
               )}
             >
-              {hero.primaryCtaLabel}
-            </Link>
-            <Link
-              href={hero.secondaryCtaHref}
+              {hero.eyebrow}
+            </p>
+
+            <h1
+              style={revealStyle(shouldAnimate, 0.12)}
               className={cn(
-                "rounded-full border px-6 py-3 text-sm font-semibold transition duration-300 hover:-translate-y-0.5",
-                isDark
-                  ? "border-white/18 bg-white/[0.06] text-white hover:border-white/35 hover:bg-white/[0.12]"
-                  : "border-slate-300/80 bg-white/90 text-[#0a2540] hover:border-slate-400 hover:bg-white",
+                shouldAnimate && "motion-fade-up",
+                "mt-6 max-w-2xl text-[clamp(2.8rem,5.8vw,5.15rem)] font-semibold leading-[0.98] tracking-[-0.055em]",
+                isDark ? "text-white" : "text-[#0a2540]",
               )}
             >
-              {hero.secondaryCtaLabel}
-            </Link>
+              {hero.title}
+            </h1>
+
+            <p
+              style={revealStyle(shouldAnimate, 0.2)}
+              className={cn(
+                shouldAnimate && "motion-fade-up",
+                "mt-6 max-w-xl text-base leading-relaxed sm:text-lg",
+                isDark ? "text-steel/90" : "text-[#425466]",
+              )}
+            >
+              {hero.description}
+            </p>
+
+            <div
+              style={revealStyle(shouldAnimate, 0.3)}
+              className={cn(shouldAnimate && "motion-fade-up", "mt-8 flex flex-wrap items-center gap-3")}
+            >
+              <Link
+                href={hero.primaryCtaHref}
+                className={cn(
+                  "rounded-full px-6 py-3 text-sm font-semibold transition duration-300 hover:-translate-y-0.5",
+                  isDark
+                    ? "bg-[#635bff] text-white shadow-[0_12px_24px_rgba(99,91,255,0.28)] hover:bg-[#756dff]"
+                    : "bg-[#635bff] text-white shadow-[0_12px_24px_rgba(99,91,255,0.22)] hover:bg-[#7269ff]",
+                )}
+              >
+                {hero.primaryCtaLabel}
+              </Link>
+              <Link
+                href={hero.secondaryCtaHref}
+                className={cn(
+                  "rounded-full border px-6 py-3 text-sm font-semibold transition duration-300 hover:-translate-y-0.5",
+                  isDark
+                    ? "border-white/18 bg-white/[0.06] text-white hover:border-white/35 hover:bg-white/[0.12]"
+                    : "border-slate-300/80 bg-white/90 text-[#0a2540] hover:border-slate-400 hover:bg-white",
+                )}
+              >
+                {hero.secondaryCtaLabel}
+              </Link>
+            </div>
           </div>
-
-        </div>
+        ) : (
+          <div className="h-7" />
+        )}
 
         <div
-          style={revealStyle(shouldAnimate, 0.4)}
-          className={cn(shouldAnimate && "motion-fade-up", "mt-8 pb-1")}
+          style={shouldShowHeroContent ? revealStyle(shouldAnimate, 0.4) : undefined}
+          className={cn(shouldShowHeroContent && shouldAnimate && "motion-fade-up", "mt-8 pb-1")}
         >
-          <BrandMarquee className="w-full max-w-none" animate={animateMarquee} />
+          <BrandMarquee
+            className="w-full max-w-none"
+            animate={animateMarquee}
+            durationSeconds={marqueeDurationSeconds}
+          />
         </div>
       </Container>
     </section>
